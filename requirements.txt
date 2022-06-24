@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+textblob
+tweet-preprocessor
+transformers
+unidecode
+torch
+numpy
+pandas
+tqdm
+nltk
