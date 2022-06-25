@@ -66,8 +66,8 @@ def predict(input_ids,att_mask):
     outputs = model(input_ids,att_mask)
     logits=outputs[0]
     logits = logits.detach().cpu().numpy()
-    score = F.softmax(outputs[0])
-    return score
+    result = np.argmax(logits, axis=1).flatten()
+    return result
 
 #-------------TEST MODEL - TEST_MODEL=True--------------------
 def create_data_loader(input_ids,att_masks,labels,batch_size,num_workers):
@@ -169,14 +169,14 @@ async def analyze(tweet : TweetText):
     clean_text = clean_tweet(tweet.text)
     #polarity-subjetivity 
     translated_text=TextBlob(clean_text).translate(from_lang='es',to='en')
-    polarity=translated_text.sentiment.polarity
-    subj=translated_text.sentiment.subjectivity
+    polarity=round(translated_text.sentiment.polarity,2)
+    subj=round(translated_text.sentiment.subjectivity,2)
     #toxicity
     toxicity_score = round(toxicity_scorer(clean_text,top_k=1)[0]['score'],2)
     #claim score
     input_ids,att_mask=tokenize(clean_text)
-    claim_score = round(predict(input_ids,att_mask)[0][1].item(),2)
-    print(claim_score)
+    claim = predict(input_ids,att_mask)[0].item()
+    print(claim)
 
     return {
         "message": "OK",
@@ -184,11 +184,8 @@ async def analyze(tweet : TweetText):
         'polarity':polarity,
         'subj':subj,
         'toxicity_score':toxicity_score,
-        'claim_score':claim_score,
-        'nouns': translated_text.noun_phrases
+        'claim':claim
     }
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=3000)
-
-    #aaa
